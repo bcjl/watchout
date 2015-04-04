@@ -37,17 +37,30 @@ var createEnemies = function(){ // returns an array of objects that contain enem
   return rangeArr.map(function(elem){
     return {
       id: elem,
-      x: 0,
-      y: 0
+      x: Math.random() * 100,
+      y: Math.random() * 100
     };
   });
 };
 
-var render = function(enemyData){
-  // console.log("called render");
+var player = [{
+  x: 50,
+  y: 50
+}];
+
+var initialize = function(enemyData){
   var d3_enemies = d3_gameBoard.selectAll('circle.enemy')
   .data(enemyData, function(d){ return d.id;});
+// drag constructor
+  var drag = d3.behavior.drag()
+    .on('dragstart', function(){d3_player.style({'fill': 'green'})})
+    .on('drag', function(){d3_player
+                  .attr('cx', d3.event.x)
+                  .attr('cy', d3.event.y)
+                })
+    .on('dragend', function(){d3_player.style({'fill': 'red'})} );
 
+//instantiation of dom elements
   d3_enemies.enter()
     .append('svg:circle')
     .attr('class', 'enemy')
@@ -55,13 +68,36 @@ var render = function(enemyData){
     .attr('cy', function(enemy){ return axes.y(enemy.y)} )
     .attr('r', '10px');
 
+  var d3_player = d3_gameBoard.selectAll('circle.player')
+    .data(player);
+
+  d3_player.enter()
+    .append('svg:circle')
+    .attr('class', 'player')
+    .attr('cx', function(player){ return axes.x(player.x)} )
+    .attr('cy', function(player){ return axes.y(player.y)} )
+    .attr('r', '10px')
+    .call(drag)
+    .style({'fill': 'red'});
+
+};
+
+
+var render = function(enemyData){
+  // console.log("called render");
+  var d3_enemies = d3_gameBoard.selectAll('circle.enemy')
+  .data(enemyData, function(d){ return d.id;});
+
   d3_enemies.attr('class', 'enemy').transition().duration(750)
     .attr('cx', function(enemy){ return axes.x(enemy.x)} )
     .attr('cy', function(enemy){ return axes.y(enemy.y)} )
     .attr('r', '10px');
+
+
 };
 
 var enemyArray = createEnemies();
+initialize(enemyArray);
 var update = function(){
     // gameStats.score++;
     //how do we use d3 to update the score now?
